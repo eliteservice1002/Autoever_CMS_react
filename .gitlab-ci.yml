@@ -1,0 +1,28 @@
+before_script:
+  - apt-get update -qq
+  - apt-get install -qq git
+  - 'which ssh-agent || ( apt-get install -qq openssh-client )'
+  - eval $(ssh-agent -s)
+  - ssh-add <(echo "$SSH_PRIVATE_KEY")
+  - mkdir -p ~/.ssh
+  - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+
+deploy_staging:
+  type: deploy
+  environment:
+    name: staging
+    url: autoever-cms.narrative.click
+  script:
+    - ssh ns_hyundai@autoever-cms.narrative.click "cd /var/www/autoever-web-cms-frontend && git checkout staging && git pull && make reload"
+  only:
+    - staging
+
+# deploy_production:
+#   type: deploy
+#   environment:
+#     name: production
+#     url: $HOST
+#   script:
+#     - ssh ns_hyundai@$HOST "cd /var/www/cms && git pull && make reload"
+#   only:
+#     - master
